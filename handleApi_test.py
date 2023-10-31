@@ -1,9 +1,12 @@
 import argparse
 import requests
 import json
+from dotenv import load_dotenv
+import os
 
-# 目标URL
-BaseUrl = "https://www.petcat.pro/petcat-test/api/HandlePublic"
+load_dotenv()
+BaseUrl = os.getenv('BaseUrl')
+JsonDataUrl = os.getenv('JsonDataUrl')
 
 def BaseRequest(url,http_method ,params):
     print("Test method {} start >>>>>>:".format(params['method']))
@@ -161,7 +164,7 @@ def Test_json_data():
     # 将 JSON 数据转换为字符串
     json_data = json.dumps(data)
 
-    url = "https://www.petcat.pro/petcat-test/api/PetcatAd"
+    url = JsonDataUrl
     print("Test method {} start >>>>>>:".format('Test_json_data'))
     BaseRequest_JsonData(url,'post',json_data)
 
