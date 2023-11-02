@@ -202,7 +202,7 @@ def main(args):
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--test_all",action="store_true",help="执行全部测试")
+    parser.add_argument("--test-all",action="store_true",help="执行全部测试")
     parser.add_argument("--test",type=str,help="执行单个测试")
     args = parser.parse_args()
     main(args)
