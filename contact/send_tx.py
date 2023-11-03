@@ -1,24 +1,26 @@
-def sendSignTx(wb3,contractobj,address_from,amount,private_key): 
-    # 创建交易
-    gas_price = wb3.eth.gas_price
-    gas_limit = 300000
-    tx = contractobj.functions.feed('buyfood',amount).build_transaction({
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+gas_limit = int(os.getenv('Gas_Limit'))
+
+def new_feed_tx(wb3,contractobj,address_from,info,amount): 
+    tx_data =  contractobj.functions.feed(info,amount).build_transaction({
         'chainId': wb3.eth.chain_id,  
         'gas': gas_limit,
-        'gasPrice': gas_price,
+        'gasPrice': wb3.eth.gas_price,
         'nonce': wb3.eth.get_transaction_count(address_from),   
         'from':address_from, 
     })
+    return tx_data
 
-    try:
-        estGas = wb3.eth.estimate_gas(tx)    
-    except Exception as e:
-        print("Transaction error:",e)
-        return False
-
+def send_sign_tx(wb3,txdata,address_from,private_key):
+    estGas = wb3.eth.estimate_gas(txdata)
     if estGas > wb3.eth.get_balance(address_from):
         print("Insufficient gas balance.")
-    signTx = wb3.eth.account.sign_transaction(tx, private_key)
+
+    signTx = wb3.eth.account.sign_transaction(txdata, private_key)
     hash = wb3.eth.send_raw_transaction(signTx.rawTransaction)
     print("Transaction sent with hash:", hash.hex())
     return hash.hex()
