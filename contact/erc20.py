@@ -1,6 +1,13 @@
-from web3 import Web3
-from dotenv import load_dotenv
-import os
+
+def isApproved(tokenobj,owner,spender,allowance_amount):
+    allowance_value = tokenobj.functions.allowance(owner,spender).call()
+    print("allowance_value:",allowance_value)
+
+    if allowance_value < allowance_amount:
+        print("Insufficient allowance value.")
+        return False
+        
+    return True
 
 def approve(tokenobbj,wb3,address_from,spender,allowance_value,gas_limit,private_key):
     tx_data = tokenobbj.functions.approve(spender, allowance_value).build_transaction({
