@@ -15,16 +15,7 @@ def new_feed_tx(wb3,contractobj,address_from,info,amount):
     })
     return tx_data
 
-def send_sign_tx(wb3,txdata,address_from,private_key):
-    estGas = wb3.eth.estimate_gas(txdata)
-    if estGas > wb3.eth.get_balance(address_from):
-        print("Insufficient gas balance.")
 
-    signTx = wb3.eth.account.sign_transaction(txdata, private_key)
-    hash = wb3.eth.send_raw_transaction(signTx.rawTransaction)
-    print("Transaction sent with hash:", hash.hex())
-    return hash.hex()
-        
 
  
 

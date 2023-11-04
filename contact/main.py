@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 import os
 import json
 import sys
-import erc20
-import send_tx
+import ERC20 as erc
+import petcat as cat
 import argparse
 
 load_dotenv()
@@ -31,34 +31,59 @@ if wb3.is_connected() != True:
 contractobj = wb3.eth.contract(address=contractAddr, abi=contract_abi)
 tokenobj = wb3.eth.contract(address=token_address, abi=erc20_abi)
 
-def allowance():
-    allowanceValue = erc20.allowance(tokenobj,address_from,contractAddr)
-    print(f"allowance value: {allowanceValue}")
+def send_sign_tx(wb3,txdata,address_from,private_key):
+    estGas = wb3.eth.estimate_gas(txdata)
+    if estGas > wb3.eth.get_balance(address_from):
+        print("Insufficient gas balance.")
 
-def approve(amount):
-    txdata = erc20.new_approve_tx(tokenobj,wb3,address_from,contractAddr,amount)
-    try:
-        send_tx.send_sign_tx(wb3,txdata,address_from,private_key)
-    except Exception as e:
-        print("sendSignTx error:",e)
+    signTx = wb3.eth.account.sign_transaction(txdata, private_key)
+    hash = wb3.eth.send_raw_transaction(signTx.rawTransaction)
+    print("Transaction sent with hash:", hash.hex())
+    return hash.hex()
+        
 
-def buy_food(amount):
-    txdata = send_tx.new_feed_tx(wb3,contractobj, address_from,'buy_food',amount)
-    try:
-        send_tx.send_sign_tx(wb3,txdata,address_from,private_key)
-    except Exception as e:
-        print("sendSignTx error:",e)
-
-def main(args):
-    amount = 1000000000000000000
+def main(args):    
+    erc20 = erc.ERC20(wb3,tokenobj)
     if args.option == 'allowance':
-        allowance()
+        allowanceValue = erc20.allowance(address_from,contractAddr)
+        print(f"allowance value: {allowanceValue}")
+    elif args.option == 'symbol':
+        symbol = erc20.symbol()
+        print(f'symbol: {symbol}')
     elif args.option == 'approve':
-        approve(amount)
+        approve_amount = 1000000000000000000
+        txdata = erc20.new_approve_tx(address_from,contractAddr,approve_amount,gasLimit)
+        try:
+            send_sign_tx(wb3,txdata,address_from,private_key)
+        except Exception as e:
+            print("sendSignTx error:",e)
     elif args.option == 'buy_food':
-        buy_food(amount)
+        amount = 1000000000000000000
+        txdata = cat.new_feed_tx(wb3,contractobj, address_from,'buy_food',amount)
+        try:
+            send_sign_tx(wb3,txdata,address_from,private_key)
+        except Exception as e:
+            print("sendSignTx error:",e)
     elif args.option == 'balanceOf':
-        print(f'{address_from} token balance:{erc20.token_balance(tokenobj,address_from)}')
+        balance = erc20.token_balance(address_from)
+        print(f'{address_from} token balance:{balance}')
+    elif args.option == 'transfer':
+        to = '0x1bE0D2F17c64b9b3F0dAc972d16001EDE7cd0bfE'
+        amount = 2000000000000000000
+        txdata = erc20.new_transfer_tx(address_from,to,amount,gasLimit)
+        try:
+            send_sign_tx(wb3,txdata,address_from,private_key)
+        except Exception as e:
+            print("sendSignTx error:",e)
+    elif args.option == 'transferFrom':
+        addr_from = ''
+        to = '0x1bE0D2F17c64b9b3F0dAc972d16001EDE7cd0bfE'
+        amount = 2000000000000000000
+        txdata = erc20.new_transferFrom_tx(addr_from,to,amount,gasLimit)
+        try:
+            send_sign_tx(wb3,txdata,address_from,private_key)
+        except Exception as e:
+            print("sendSignTx error:",e)
     else:
         print(f"user -h or --help to get some help.")
 
