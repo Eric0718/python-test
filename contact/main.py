@@ -1,67 +1,48 @@
-from web3 import Web3
-from dotenv import load_dotenv
 import os
-import json
-import sys
-import ERC20 as erc
-import petcat as cat
+import ERC20 
+import petcat 
 import argparse
+from dotenv import load_dotenv
 
 load_dotenv()
-nodeUrl_test = os.getenv('Bsc_Url_Test')
-contractAddr = os.getenv('Contract_Address')
-token_address = os.getenv('Token_Address')
-gasLimit = int(os.getenv('Gas_Limit'))
 
+token_address = os.getenv('Token_Address')
+chainRpcUrl = os.getenv('Bsc_Rpc_Url_Test')
+cat_contract = os.getenv('Contract_Address')
+gasLimit = int(os.getenv('Gas_Limit'))
 address_from = os.getenv('Test_Address')
 private_key = os.getenv('Priv_Key')
 address_to = "0x1bE0D2F17c64b9b3F0dAc972d16001EDE7cd0bfE"
 
-with open('/Users/lzl/work/python/contact/abi/BDB.abi','r') as BDBABI:
-    contract_abi = json.load(BDBABI)
-
-with open('/Users/lzl/work/python/contact/abi/ERC20.abi','r') as erc20ABI:
-    erc20_abi = json.load(erc20ABI)
-
-wb3 = Web3(Web3.HTTPProvider(nodeUrl_test))
-
-if wb3.is_connected() != True:
-    sys.exit()
-
-contractobj = wb3.eth.contract(address=contractAddr, abi=contract_abi)
-tokenobj = wb3.eth.contract(address=token_address, abi=erc20_abi)
-
-def send_sign_tx(wb3,txdata,address_from,private_key):
-    estGas = wb3.eth.estimate_gas(txdata)
-    if estGas > wb3.eth.get_balance(address_from):
-        print("Insufficient gas balance.")
-
-    signTx = wb3.eth.account.sign_transaction(txdata, private_key)
-    hash = wb3.eth.send_raw_transaction(signTx.rawTransaction)
-    print("Transaction sent with hash:", hash.hex())
-    return hash.hex()
-        
+catAbi = '/Users/lzl/work/python/contact/abi/CAT.abi'
+erc20Abi = '/Users/lzl/work/python/contact/abi/ERC20.abi'
 
 def main(args):    
-    erc20 = erc.ERC20(wb3,tokenobj)
+    erc20 = ERC20.ERC20(erc20Abi,chainRpcUrl,token_address)
+    cat = petcat.Petcat(catAbi,chainRpcUrl,cat_contract)
+
     if args.option == 'allowance':
-        allowanceValue = erc20.allowance(address_from,contractAddr)
+        allowanceValue = erc20.allowance(address_from,cat_contract)
         print(f"allowance value: {allowanceValue}")
-    elif args.option == 'symbol':
-        symbol = erc20.symbol()
-        print(f'symbol: {symbol}')
+    elif args.option == 'tokeninfo':
+        print(f'symbol: {erc20.symbol()}')
+        print(f'decimals: {erc20.decimals()}')
+        print(f'totalSupply: {erc20.totalSupply()}')
     elif args.option == 'approve':
-        approve_amount = 1000000000000000000
-        txdata = erc20.new_approve_tx(address_from,contractAddr,approve_amount,gasLimit)
+        owner = address_from
+        spender = cat_contract #"0x06a2f352983c400a57AB00752d651a6fc2A3Ff2b"
+        approve_amount = 100000000000000000000
+        
         try:
-            send_sign_tx(wb3,txdata,address_from,private_key)
+            txdata = erc20.new_approve_tx(owner,spender,approve_amount,gasLimit)
+            erc20.send_sign_tx(txdata,owner,private_key)
         except Exception as e:
             print("sendSignTx error:",e)
     elif args.option == 'buy_food':
         amount = 1000000000000000000
-        txdata = cat.new_feed_tx(wb3,contractobj, address_from,'buy_food',amount)
         try:
-            send_sign_tx(wb3,txdata,address_from,private_key)
+            txdata = cat.new_feed_tx(address_from,'buy_food',amount,gasLimit)
+            cat.send_sign_tx(txdata,address_from,private_key)
         except Exception as e:
             print("sendSignTx error:",e)
     elif args.option == 'balanceOf':
@@ -70,20 +51,25 @@ def main(args):
     elif args.option == 'transfer':
         to = '0x1bE0D2F17c64b9b3F0dAc972d16001EDE7cd0bfE'
         amount = 2000000000000000000
-        txdata = erc20.new_transfer_tx(address_from,to,amount,gasLimit)
+        
         try:
-            send_sign_tx(wb3,txdata,address_from,private_key)
+            txdata = erc20.new_transfer_tx(address_from,to,amount,gasLimit)
+            erc20.send_sign_tx(txdata,address_from,private_key)
         except Exception as e:
             print("sendSignTx error:",e)
     elif args.option == 'transferFrom':
-        addr_from = ''
-        to = '0x1bE0D2F17c64b9b3F0dAc972d16001EDE7cd0bfE'
-        amount = 2000000000000000000
-        txdata = erc20.new_transferFrom_tx(addr_from,to,amount,gasLimit)
+        owner = '0x1bE0D2F17c64b9b3F0dAc972d16001EDE7cd0bfE'
+        to = '0x9DAC6fB1dF05b8390dcE0221A60aF06C8383a530'
+        amount = 20000000000000000
+        
         try:
-            send_sign_tx(wb3,txdata,address_from,private_key)
+            txdata = erc20.new_transferFrom_tx(address_from,owner,to,amount,gasLimit)
+            erc20.send_sign_tx(txdata,address_from,private_key)
         except Exception as e:
             print("sendSignTx error:",e)
+    elif args.option == 'config':
+        print(f"erc20:{erc20.getConfig()}")
+        print(f"cat:{cat.getConfig()}")
     else:
         print(f"user -h or --help to get some help.")
 
