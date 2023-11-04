@@ -8,7 +8,7 @@ load_dotenv()
 
 token_address = os.getenv('Token_Address')
 chainRpcUrl = os.getenv('Bsc_Rpc_Url_Test')
-cat_contract = os.getenv('Contract_Address')
+cat_contract = os.getenv('Cat_Contract')
 gasLimit = int(os.getenv('Gas_Limit'))
 address_from = os.getenv('Test_Address')
 private_key = os.getenv('Priv_Key')
@@ -35,23 +35,29 @@ def main(args):
         
         try:
             txdata = erc20.new_approve_tx(owner,spender,approve_amount,gasLimit)
-            erc20.send_sign_tx(txdata,owner,private_key)
+            hash = erc20.send_sign_tx(txdata,owner,private_key)
         except Exception as e:
             print("sendSignTx error:",e)
+        else:
+            print(f"send tx hash: {hash}")
     elif args.option == 'buy_food':
         amount = 1000000000000000000
         try:
             txdata = cat.new_feed_tx(address_from,'buy_food',amount,gasLimit)
-            cat.send_sign_tx(txdata,address_from,private_key)
+            hash = cat.send_sign_tx(txdata,address_from,private_key)
         except Exception as e:
             print("sendSignTx error:",e)
+        else:
+            print(f"send tx hash: {hash}")
     elif args.option == 'buy_nft':
         amount = 1000000000000000000
         try:
-            txdata = cat.new_buyNft_tx(address_from,'buy_food',amount,gasLimit)
-            cat.send_sign_tx(txdata,address_from,private_key)
+            txdata = cat.new_buyNft_tx(address_from,'buy_nft',amount,gasLimit)
+            hash = cat.send_sign_tx(txdata,address_from,private_key)
         except Exception as e:
             print("sendSignTx error:",e)
+        else:
+            print(f"send tx hash: {hash}")
     elif args.option == 'balanceOf':
         balance = erc20.token_balance(address_from)
         print(f'{address_from} token balance:{balance}')
@@ -61,9 +67,11 @@ def main(args):
         
         try:
             txdata = erc20.new_transfer_tx(address_from,to,amount,gasLimit)
-            erc20.send_sign_tx(txdata,address_from,private_key)
+            hash = erc20.send_sign_tx(txdata,address_from,private_key)
         except Exception as e:
             print("sendSignTx error:",e)
+        else:
+            print(f"send tx hash: {hash}")
     elif args.option == 'transferFrom':
         owner = '0x1bE0D2F17c64b9b3F0dAc972d16001EDE7cd0bfE'
         to = '0x9DAC6fB1dF05b8390dcE0221A60aF06C8383a530'
@@ -71,9 +79,11 @@ def main(args):
         
         try:
             txdata = erc20.new_transferFrom_tx(address_from,owner,to,amount,gasLimit)
-            erc20.send_sign_tx(txdata,address_from,private_key)
+            hash = erc20.send_sign_tx(txdata,address_from,private_key)
         except Exception as e:
             print("sendSignTx error:",e)
+        else:
+            print(f"send tx hash: {hash}")
     elif args.option == 'config':
         print(f"erc20:{erc20.getConfig()}")
         print(f"cat:{cat.getConfig()}")

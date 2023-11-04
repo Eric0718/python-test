@@ -2,17 +2,20 @@ import sendtx_base
 import json
 
 class Petcat(sendtx_base.SendTx):
-    def __init__(self,abifile,chainRpcUrl,contractAddr) -> None:
+    def __init__(self,abifile,chainRpcUrl,contractAddr):
         super().__init__(chainRpcUrl)
-        try:
-            with open(abifile,'r') as BDBABI:
-                contract_abi = json.load(BDBABI)
-        except Exception as e:
-            raise ValueError(f'open abi file failed:{e}')  
+        #try:
+        with open(abifile,'r') as BDBABI:
+            contract_abi = json.load(BDBABI)
+        #except Exception as e:
+        #    raise ValueError(f'open abi file failed:{e}')  
 
         self.chainRpcUrl = chainRpcUrl
         self.contractAddr = contractAddr
         self.contractobj = self.wb3.eth.contract(address=self.contractAddr, abi=contract_abi)
+    
+    def isWeb3Connected(self):
+        return self.wb3.is_connected()
 
     def getConfig(self):
         return self.chainRpcUrl,self.contractAddr
