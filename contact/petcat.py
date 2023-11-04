@@ -27,6 +27,16 @@ class Petcat(sendtx_base.SendTx):
         })
         return tx_data
 
+    def new_buyNft_tx(self,address_from,info,amount,gas_limit): 
+        tx_data =  self.contractobj.functions.buyNFT(info,amount).build_transaction({
+            'chainId': self.wb3.eth.chain_id,  
+            'gas': gas_limit,
+            'gasPrice': self.wb3.eth.gas_price,
+            'nonce': self.wb3.eth.get_transaction_count(address_from),   
+            'from':address_from, 
+        })
+        return tx_data
+
 
 
  

@@ -45,6 +45,13 @@ def main(args):
             cat.send_sign_tx(txdata,address_from,private_key)
         except Exception as e:
             print("sendSignTx error:",e)
+    elif args.option == 'buy_nft':
+        amount = 1000000000000000000
+        try:
+            txdata = cat.new_buyNft_tx(address_from,'buy_food',amount,gasLimit)
+            cat.send_sign_tx(txdata,address_from,private_key)
+        except Exception as e:
+            print("sendSignTx error:",e)
     elif args.option == 'balanceOf':
         balance = erc20.token_balance(address_from)
         print(f'{address_from} token balance:{balance}')
