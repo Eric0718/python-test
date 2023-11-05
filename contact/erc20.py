@@ -1,11 +1,5 @@
 import sendtx_base 
-from dotenv import load_dotenv
-import os
-
 import json
-import sys
-
-load_dotenv()
 
 class ERC20(sendtx_base.SendTx):
     def __init__(self,abifile,chainRpcUrl,tokenAddress):

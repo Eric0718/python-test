@@ -4,11 +4,11 @@ import json
 class Petcat(sendtx_base.SendTx):
     def __init__(self,abifile,chainRpcUrl,contractAddr):
         super().__init__(chainRpcUrl)
-        #try:
-        with open(abifile,'r') as BDBABI:
-            contract_abi = json.load(BDBABI)
-        #except Exception as e:
-        #    raise ValueError(f'open abi file failed:{e}')  
+        try:
+            with open(abifile,'r') as BDBABI:
+                contract_abi = json.load(BDBABI)
+        except Exception as e:
+            raise ValueError(f'open abi file failed:{e}')  
 
         self.chainRpcUrl = chainRpcUrl
         self.contractAddr = contractAddr
