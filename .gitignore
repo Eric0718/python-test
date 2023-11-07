@@ -1,3 +1,5 @@
 results/
 .env
 *.pyc
+log/
+mysql_conf.py
